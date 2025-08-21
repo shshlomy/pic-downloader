@@ -32,7 +32,7 @@ pic-downloader/
 ├── cleanup_duplicates.py               # Utility to remove duplicates
 ├── test_content_filter.py              # NEW: Test content filtering on existing images
 ├── install_dependencies.py             # NEW: Install ML/CV dependencies
-├── analyze_visit_buttons.py            # URL extraction analyzer/debugger
+
 ├── setup.py                            # Installation and setup script
 ├── requirements.txt                    # Python dependencies (updated with ML libs)
 ├── image_sources.db                   # SQLite database (auto-created)
@@ -107,8 +107,7 @@ python test_content_filter.py "downloads/agam buhbut" "agam buhbut"
 # Clean up existing duplicates in a folder
 python cleanup_duplicates.py "downloads/folder_name"
 
-# Analyze URL extraction from Google Images (debug tool)
-python analyze_visit_buttons.py
+
 ```
 
 ## 🔧 Fixed Issues
@@ -265,19 +264,7 @@ sqlite3 image_sources.db "SELECT query, total_urls FROM searches;"
 sqlite3 image_sources.db "SELECT domain, SUM(images_found) as total FROM source_urls GROUP BY domain ORDER BY total DESC LIMIT 10;"
 ```
 
-## 🔍 URL Extraction Analysis
 
-The `analyze_visit_buttons.py` tool helps debug URL extraction:
-
-```bash
-python analyze_visit_buttons.py
-```
-
-Output shows:
-- Number of URLs found
-- Extraction methods used
-- Original website domains
-- Cleaning of tracking parameters
 
 ## 📝 Requirements
 
