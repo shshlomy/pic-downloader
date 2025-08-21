@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Downloads folder
+downloads/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+
+# Debug files
+*debug*
+*.html
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Playwright
+playwright-report/
+test-results/
