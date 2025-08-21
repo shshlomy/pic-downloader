@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Main Picture Downloader Script - Uses the latest fixed version
+Main Picture Downloader Script - Uses consolidated downloader
 """
 
 import sys
 import asyncio
-from comprehensive_downloader_fixed import FixedMultiThreadedDownloader
+from consolidated_downloader import ConsolidatedDownloader
 
 def main():
     """Main entry point for the picture downloader"""
@@ -18,6 +18,7 @@ def main():
         print("  python3 pic_downloader.py \"noa kirel\" 50")
         print("  python3 pic_downloader.py \"kobe bryant\" 100 8")
         print("\nFeatures:")
+        print("  • Consolidated folders (all searches for same subject in one folder)")
         print("  • Fixed duplicate detection")
         print("  • Enhanced image filtering")
         print("  • Multi-threaded downloading")
@@ -28,8 +29,8 @@ def main():
     max_images = int(sys.argv[2]) if len(sys.argv) > 2 else 30
     max_workers = int(sys.argv[3]) if len(sys.argv) > 3 else 5
     
-    # Run the fixed downloader
-    downloader = FixedMultiThreadedDownloader(query, max_images, max_workers)
+    # Run the consolidated downloader
+    downloader = ConsolidatedDownloader(query, max_images, max_workers)
     asyncio.run(downloader.run())
 
 if __name__ == "__main__":
