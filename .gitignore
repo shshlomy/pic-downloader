@@ -13,8 +13,10 @@ venv/
 *.sqlite
 *.sqlite3
 
-# Downloads folder
+# Downloads folder - User generated content
 downloads/
+downloads/*
+!downloads/.gitkeep
 
 # IDE
 .idea/
@@ -38,3 +40,16 @@ downloads/
 # Playwright
 playwright-report/
 test-results/
+
+# User generated images and content
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.bmp
+*.tiff
+
+# Cache and temporary files
+.cache/
+*.cache
