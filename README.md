@@ -1,343 +1,178 @@
-# 🖼️ Advanced Image Downloader Suite
+# 🚀 Modular Image Downloader
 
-A powerful, multi-threaded image downloading system with **fixed duplicate detection** and enhanced image filtering. Downloads high-quality images from original source websites with comprehensive tracking via SQLite database.
+A **clean, modular, and maintainable** image downloading system built with **SOLID principles** and **design patterns**.
 
-## 🌟 Key Features
+## ✨ Features
 
-### Core Capabilities
-- **🔍 Smart URL Extraction**: Extracts original website URLs from Google Images (not thumbnails)
-- **⚡ Multi-threaded Downloads**: Concurrent downloading with configurable worker threads
-- **🔒 Fixed Duplicate Detection**: Proper hash-based deduplication using actual saved file content
-- **📊 SQLite Database**: Complete tracking of searches, URLs, and downloaded images
-- **🌐 Source Website Visiting**: Downloads images directly from original websites
-- **🧠 Content-Aware Filtering**: Advanced AI-powered filtering with face detection and content analysis
-- **🌍 International Language Support**: Full support for Hebrew, Arabic, Chinese, and all Unicode languages
+- **🔍 Smart Search**: Intelligent Google search with early termination
+- **🖼️ Content Extraction**: Automated image extraction from websites
+- **💾 Database Storage**: SQLite with proper foreign key constraints
+- **📁 Organized Storage**: Sequential file naming with duplicate detection
+- **⚡ Performance**: Multi-threaded downloads with configurable workers
+- **🎯 Accuracy**: Meets exact image count requirements efficiently
 
-### Technical Features
-- **Async/Await Architecture**: Efficient concurrent website visiting
-- **Thread Pool Executor**: Parallel image downloading
-- **MD5 Hash Verification**: Content-based duplicate detection using final saved files
-- **Robust Error Handling**: Graceful failure recovery
-- **Progress Tracking**: Real-time download status
-- **Configurable Parameters**: Max images, worker threads, quality thresholds
+## 🏗️ Architecture
+
+### **SOLID Principles Implementation**
+- **Single Responsibility**: Each class has one clear purpose
+- **Open/Closed**: Extensible without modification
+- **Liskov Substitution**: Interfaces work with any implementation
+- **Interface Segregation**: Components only depend on needed interfaces
+- **Dependency Inversion**: High-level modules depend on abstractions
+
+### **Design Patterns**
+- **Factory Pattern**: Centralized component creation
+- **Strategy Pattern**: Pluggable search strategies
+- **Dependency Injection**: Loose coupling between components
+- **Template Method**: Structured workflow orchestration
+
+### **Domain-Driven Design (DDD)**
+- **Core Domain**: Fundamental business logic and interfaces
+- **Search Domain**: Search operations and strategies
+- **Extraction Domain**: Image extraction from web sources
+- **Download Domain**: Image downloading operations
+- **Storage Domain**: File storage and database management
+- **Monitoring Domain**: Progress tracking and logging
+- **Factory Domain**: Component creation and wiring
+- **Configuration Domain**: Settings and configuration management
 
 ## 📁 Project Structure
 
 ```
 pic-downloader/
-├── pic_downloader.py                    # Main entry point with content-aware filtering
-├── comprehensive_downloader_fixed.py    # Core downloader with AI filtering
-├── consolidated_downloader.py           # Consolidated folder downloader
-├── content_aware_filter.py             # NEW: AI-powered content filtering module
-├── cleanup_duplicates.py               # Utility to remove duplicates
-├── test_content_filter.py              # NEW: Test content filtering on existing images
-├── install_dependencies.py             # NEW: Install ML/CV dependencies
-
-├── setup.py                            # Installation and setup script
-├── requirements.txt                    # Python dependencies (updated with ML libs)
-├── image_sources.db                   # SQLite database (auto-created)
-├── CONTENT_AWARE_FILTERING.md          # NEW: Technical documentation
-└── downloads/                         # Downloaded images directory
-    ├── omer adam/                     # 102 high-quality images with AI filtering
-    ├── noa kirel/
-    └── [search_query]/
+├── main.py                       # 🎯 Main entry point
+├── requirements.txt              # 📦 Dependencies
+├── MODULAR_ARCHITECTURE.md      # 📚 Detailed documentation
+├── downloads/                    # 📁 Downloaded images
+└── pic_downloader/              # 📦 Main package
+    ├── __init__.py
+    ├── main.py                   # 🎯 Package entry point
+    ├── core/                     # 🧠 Core domain
+    │   ├── __init__.py
+    │   ├── interfaces.py         # 🔌 Core abstractions
+    │   └── orchestrator.py       # 🎼 Main coordinator
+    ├── search/                   # 🔍 Search domain
+    │   ├── __init__.py
+    │   ├── providers/            # 🌐 Search providers
+    │   │   ├── __init__.py
+    │   │   └── google_provider.py
+    │   └── strategies/           # 🧠 Search strategies
+    │       ├── __init__.py
+    │       └── smart_strategy.py
+    ├── extraction/               # 🖼️ Extraction domain
+    │   ├── __init__.py
+    │   └── web_extractor.py
+    ├── download/                 # ⬇️ Download domain
+    │   ├── __init__.py
+    │   └── http_downloader.py
+    ├── storage/                  # 💾 Storage domain
+    │   ├── __init__.py
+    │   ├── managers/             # 📁 Storage managers
+    │   │   ├── __init__.py
+    │   │   └── sequential_manager.py
+    │   └── database/             # 🗄️ Database operations
+    │       ├── __init__.py
+    │       └── sqlite_manager.py
+    ├── monitoring/               # 📊 Monitoring domain
+    │   ├── __init__.py
+    │   └── progress_tracker.py
+    ├── factory/                  # 🏭 Factory domain
+    │   ├── __init__.py
+    │   └── component_factory.py
+    └── config/                   # ⚙️ Configuration domain
+        ├── __init__.py
+        └── settings.py
 ```
 
-## 🚀 Installation
+## 🚀 Quick Start
 
-### Prerequisites
-- Python 3.8+
-- pip package manager
-
-### Setup
+### 1. Install Dependencies
 ```bash
-# Clone the repository
-git clone [repository-url]
-cd pic-downloader
-
-# Install dependencies and Playwright browsers
-python setup.py
+pip install -r requirements.txt
 ```
 
-## 💻 Usage
-
-### First Time Setup
-
+### 2. Run the Downloader
 ```bash
-# Install content-aware filtering dependencies
-python install_dependencies.py
+python3 main.py "search query" [number_of_images]
 ```
 
-### Basic Usage
-
+### 3. Examples
 ```bash
-# Download with defaults (30 images, 5 threads) - Now with AI filtering!
-python pic_downloader.py "michael jordan"
+# Download 10 images of "sarit hadad"
+python3 main.py "sarit hadad" 10
 
-# Specify max images
-python pic_downloader.py "noa kirel" 50
+# Download 20 images of "gidi gov"
+python3 main.py "gidi gov" 20
 
-# Specify max images and worker threads
-python pic_downloader.py "lebron james" 100 8
-
-# Hebrew/Unicode searches are fully supported
-python pic_downloader.py "נועה קירל"  # Noa Kirel in Hebrew
-python pic_downloader.py "גל גדות"    # Gal Gadot in Hebrew
-python pic_downloader.py "王菲"        # Faye Wong in Chinese
+# Download 5 images of "eden harel"
+python3 main.py "eden harel" 5
 ```
 
-### Content-Aware Filtering Features
+## 🔧 Configuration
 
-The system now automatically:
-- ✅ **Detects faces** in images and prioritizes photos with human faces
-- ✅ **Rejects album covers**, logos, icons, and UI elements
-- ✅ **Scores relevance** based on content analysis (0.0-1.0 scale)
-- ✅ **Classifies content types**: portraits, group photos, artwork, etc.
-- ✅ **Provides detailed feedback** about why images were accepted or rejected
+The system automatically configures:
+- **Max Workers**: 8 concurrent downloads
+- **Database**: SQLite with foreign key enforcement
+- **Storage**: Sequential file naming (000.jpg, 001.jpg, etc.)
+- **Progress**: Real-time tracking with ETA
 
-### Advanced Usage
+## 📊 Performance
 
-```bash
-# Use the core downloader directly
-python comprehensive_downloader_fixed.py "search query" [max_images] [max_workers]
-
-# Test content filtering on existing images
-python test_content_filter.py "downloads/agam buhbut" "agam buhbut"
-
-# Clean up existing duplicates in a folder
-python cleanup_duplicates.py "downloads/folder_name"
-
-
-```
-
-## 🔧 Fixed Issues
-
-### **Duplicate Detection Bug (FIXED)**
-- **Previous Issue**: Hash calculated before PIL processing, but files saved after processing
-- **Fix**: Hash now calculated from actual saved file content
-- **Result**: True duplicate detection with 0% false negatives
-
-### **Irrelevant Images (FIXED with AI)**
-- **Previous Issue**: Downloaded logos, icons, album covers, and other non-person images
-- **Fix**: Content-aware filtering with face detection, ML classification, and relevance scoring
-- **Result**: Only relevant person photos downloaded (rejects 70-80% of irrelevant content)
-- **New Features**: Face detection, portrait recognition, content type classification
-
-### **Hebrew/Unicode Search Support (FIXED)**
-- **Previous Issue**: Hebrew and non-ASCII queries failed due to improper URL encoding
-- **Fix**: Proper URL encoding with `quote_plus()` and Unicode-aware directory naming
-- **Result**: Full support for Hebrew, Arabic, Chinese, and all Unicode languages
+- **Efficient Search**: Limits URL processing to avoid over-searching
+- **Smart Termination**: Stops when target is nearly reached
+- **Early Optimization**: Avoids unnecessary search variations
+- **Resource Management**: Optimized memory and CPU usage
 
 ## 🗄️ Database Schema
 
-The system uses SQLite with three main tables:
+### Tables
+- **`searches`**: Search queries and metadata
+- **`source_urls`**: Website URLs with foreign key to searches
+- **`downloaded_images`**: Image metadata with foreign key to source_urls
 
-### `searches`
-- `id`: Primary key
-- `query`: Search term
-- `search_date`: Timestamp
-- `total_urls`: Number of URLs found
+### Features
+- **Foreign Key Constraints**: Proper referential integrity
+- **Indexes**: Optimized query performance
+- **Cascade Deletes**: Automatic cleanup of related data
 
-### `source_urls`
-- `id`: Primary key
-- `url`: Original website URL
-- `domain`: Website domain
-- `visited`: Boolean flag
-- `images_found`: Count of images from this URL
-- `error_message`: Any errors encountered
+## 🧪 Testing
 
-### `downloaded_images`
-- `id`: Primary key
-- `image_url`: Direct image URL
-- `image_hash`: MD5 hash of **final saved file** (UNIQUE - for duplicate detection)
-- `file_path`: Local file location
-- `file_size`: Size in bytes
-- `width`, `height`: Image dimensions
-- `download_date`: Timestamp
+The system has been tested with:
+- ✅ **Small downloads** (1-5 images)
+- ✅ **Medium downloads** (10-20 images)
+- ✅ **Large downloads** (30+ images)
+- ✅ **Various search queries** (Hebrew, English, mixed)
 
-## 🎯 Content-Aware Filtering
+## 🔍 How It Works
 
-### Image Quality Settings
-- **Minimum dimensions**: 150x150 pixels (increased from 100x100)
-- **Minimum file size**: 8KB (increased from 5KB)
-- **Supported formats**: JPG, JPEG, PNG, GIF, WebP
+1. **Search Phase**: Google search for the query
+2. **URL Collection**: Extract and store relevant URLs
+3. **Website Processing**: Visit websites to extract images
+4. **Image Download**: Download and validate images
+5. **Storage**: Save images with sequential naming
+6. **Database**: Store metadata and relationships
 
-### AI-Powered Content Analysis
-- **Face Detection**: Uses MediaPipe and OpenCV to detect human faces
-- **Content Classification**: Identifies portraits, group photos, artwork, and UI elements
-- **Relevance Scoring**: Multi-factor scoring system (0.0-1.0 scale)
-- **Context Awareness**: Considers search query and source website context
-- **Smart Rejection**: Automatically rejects logos, icons, album covers, and irrelevant content
+## 🎯 Key Benefits
 
-### Content Filtering Algorithm
-The system uses a sophisticated multi-layer approach:
-
-1. **Quick URL Filtering**: Pre-download rejection of obvious irrelevant patterns
-2. **Basic Image Validation**: Size, format, and quality checks
-3. **Content Analysis**: Face detection and content classification
-4. **Relevance Scoring**: Multi-factor scoring based on:
-   - Face detection confidence (0.3-0.6 points)
-   - Portrait orientation bonus (0.15 points)
-   - Content type classification (±0.25 points)
-   - URL pattern analysis (±0.3 points)
-   - Single face bonus for person searches (0.2 points)
-
-### Filtering Results
-- **Minimum relevance score**: 0.4 (configurable)
-- **Typical rejection rate**: 70-80% of irrelevant content
-- **Face detection accuracy**: 85-98% confidence scores
-- **Content types identified**: `portrait_photo`, `group_photo`, `music_artist_photo`, `music_artwork`, `cdn_media`, `irrelevant_ui`
-
-## 🚄 Performance
-
-### Multi-Threading Benefits
-- **5x faster** than sequential downloading
-- Downloads 5-10 images simultaneously
-- Concurrent website visiting
-- Thread-safe database operations
-
-### Benchmarks
-- ~30 images in 30-60 seconds (with 5 threads)
-- ~100 images in 2-3 minutes (with 8 threads)
-- **0 duplicates** with proper hash-based detection
-
-## 🔍 Duplicate Detection (Fixed)
-
-The system implements **proper duplicate detection**:
-
-1. **Content-Based**: Uses MD5 hash of **final saved file content**
-2. **Database-Backed**: Hashes stored permanently in SQLite
-3. **Cross-Search**: Detects duplicates across different searches
-4. **Real-Time**: Checks both database and in-memory cache
-5. **File Cleanup**: Removes duplicate files immediately upon detection
-
-Example workflow:
-```
-1. Download image → Save with PIL → Calculate hash of saved file
-2. Check hash against database and memory
-3. If duplicate: delete file and skip
-4. If unique: store hash in database and keep file
-```
-
-## 🧹 Cleanup Utilities
-
-### Remove Existing Duplicates
-```bash
-# Clean up duplicates in a specific folder
-python cleanup_duplicates.py "downloads/noa kirel"
-
-# Example output:
-# 📋 Duplicate set 1 (hash: e1c268f49ec7...):
-#   ✅ Keeping: 020_upload_wikimedia_org.jpeg
-#   🗑️  Removing: 021_upload_wikimedia_org.jpeg
-#   🗑️  Removing: 036_upload_wikimedia_org.jpeg
-```
-
-## 🛠️ Troubleshooting
-
-### Common Issues
-
-1. **No images downloaded**
-   - Check internet connection
-   - Verify Playwright browsers are installed: `python setup.py`
-   - Some websites may block automated access
-
-2. **SSL Warnings**
-   - Normal for some sites
-   - Images still download successfully
-
-3. **Database locked errors**
-   - Close other instances of the script
-   - Delete `image_sources.db` to start fresh
-
-## 📈 Statistics & Monitoring
-
-View database statistics:
-```bash
-# Total unique images
-sqlite3 image_sources.db "SELECT COUNT(DISTINCT image_hash) FROM downloaded_images;"
-
-# Images per search
-sqlite3 image_sources.db "SELECT query, total_urls FROM searches;"
-
-# Most productive domains
-sqlite3 image_sources.db "SELECT domain, SUM(images_found) as total FROM source_urls GROUP BY domain ORDER BY total DESC LIMIT 10;"
-```
-
-
-
-## 📝 Requirements
-
-### Python Packages
-- `playwright>=1.40.0` - Browser automation
-- `aiohttp>=3.9.0` - Async HTTP client
-- `Pillow>=10.0.0` - Image processing
-- `requests>=2.31.0` - Sync HTTP for threading
-- `opencv-python>=4.8.1` - **NEW**: Computer vision for face detection
-- `mediapipe>=0.10.21` - **NEW**: Google's ML framework for face detection
-- `numpy>=1.24.3` - **NEW**: Numerical computing for image analysis
-
-### System Requirements
-- 4GB+ RAM recommended
-- Stable internet connection
-- 100MB+ free disk space per 100 images
+- **Maintainable**: Clean, modular code structure
+- **Extensible**: Easy to add new features
+- **Efficient**: Smart search and early termination
+- **Reliable**: Proper error handling and validation
+- **Scalable**: Configurable worker pools and limits
 
 ## 🤝 Contributing
 
-Contributions are welcome! Areas for improvement:
-- Additional image sources beyond Google Images
-- Image quality scoring algorithms
-- Cloud storage integration
-- Web UI interface
-- Docker containerization
+This codebase follows strict architectural principles:
+- **No circular dependencies**
+- **Clear interface contracts**
+- **Comprehensive error handling**
+- **Consistent naming conventions**
 
-## 📄 License
+## 📚 Documentation
 
-MIT License - See LICENSE file for details
-
-## 🙏 Acknowledgments
-
-- Playwright team for excellent browser automation
-- Google Images for search capabilities
-- Python async/threading communities
-
-## 📧 Support
-
-For issues, questions, or suggestions:
-- Open an issue on GitHub
-- Check existing issues for solutions
-- Review the troubleshooting section
+For detailed architectural information, see:
+- [MODULAR_ARCHITECTURE.md](MODULAR_ARCHITECTURE.md) - Complete architecture guide
 
 ---
 
-**Note**: This tool is for educational purposes. Please respect website terms of service and copyright laws when downloading images.
-
-## 🔄 Version History
-
-- **v3.0** - **MAJOR UPDATE**: Content-aware filtering with AI-powered face detection and relevance scoring
-  - Added MediaPipe and OpenCV for face detection
-  - Implemented multi-factor relevance scoring algorithm
-  - Enhanced content classification (portraits vs artwork vs UI elements)
-  - Added comprehensive test framework for filtering validation
-  - Updated dependencies with ML/CV libraries
-  - Created detailed technical documentation
-- **v2.0** - Fixed duplicate detection, enhanced filtering, improved performance
-- **v1.0** - Initial multi-threaded downloader with basic duplicate detection
-
-## 🧠 Content-Aware Filtering Examples
-
-### Successful Filtering Results (Omer Adam Search)
-```
-✅ ACCEPTED: Portrait photo (score: 1.00) - Single face detected with 0.96 confidence
-✅ ACCEPTED: Group photo (score: 0.67) - 3 faces detected with 0.85 confidence  
-✅ ACCEPTED: Music artist photo (score: 0.87) - From music site with clear face
-🚫 REJECTED: Album cover (score: 0.00) - No faces detected, music artwork classification
-🚫 REJECTED: YouTube thumbnail (score: 0.18) - Low relevance, CDN pattern penalty
-🚫 REJECTED: Concert banner (score: 0.00) - No faces, promotional graphics
-```
-
-### Real-World Performance
-- **102 Omer Adam images downloaded** with 0 irrelevant images
-- **75% rejection rate** for irrelevant content (album covers, logos, UI elements)
-- **100% face detection accuracy** for accepted person photos
-- **Zero false positives** (no irrelevant images in final collection)
+**Built with ❤️ using SOLID principles and modern Python practices**
