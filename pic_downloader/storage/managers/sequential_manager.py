@@ -12,11 +12,12 @@ from ...core.interfaces import IStorageManager
 class SequentialStorageManager(IStorageManager):
     """Storage manager for sequential file naming and image saving"""
     
-    def __init__(self, base_download_dir: Path, base_subject: str):
+    def __init__(self, base_download_dir: Path, base_subject: str, database_manager=None):
         self.base_download_dir = base_download_dir
         self.base_subject = base_subject
         self.download_dir = base_download_dir / base_subject
         self.download_dir.mkdir(parents=True, exist_ok=True)
+        self.database_manager = database_manager  # 🚨 NEW: Add database manager reference
         self._initialize_file_counter()
     
     def _initialize_file_counter(self):
@@ -80,6 +81,12 @@ class SequentialStorageManager(IStorageManager):
     def calculate_image_hash(self, image_content: bytes) -> str:
         """Calculate MD5 hash of image content"""
         return hashlib.md5(image_content).hexdigest()
+    
+    def is_duplicate_content(self, image_hash: str) -> bool:
+        """🚨 NEW: Check if image content already exists in database"""
+        if self.database_manager:
+            return self.database_manager.is_duplicate_image(image_hash)
+        return False
     
     def get_image_dimensions(self, image_content: bytes) -> Tuple[Optional[int], Optional[int]]:
         """Get image dimensions from content"""

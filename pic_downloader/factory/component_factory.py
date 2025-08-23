@@ -33,9 +33,9 @@ class ImageDownloaderFactory:
         return WebImageExtractor(headless=headless, timeout=timeout)
     
     @staticmethod
-    def create_storage_manager(base_download_dir: Path, base_subject: str) -> IStorageManager:
-        """Create a sequential storage manager"""
-        return SequentialStorageManager(base_download_dir, base_subject)
+    def create_storage_manager(base_download_dir: Path, base_subject: str, database_manager=None) -> IStorageManager:
+        """Create a sequential storage manager with database manager reference"""
+        return SequentialStorageManager(base_download_dir, base_subject, database_manager)
     
     @staticmethod
     def create_database_manager(db_path: str = "image_sources.db") -> IDatabaseManager:
@@ -84,8 +84,8 @@ class ImageDownloaderFactory:
             headless=headless,
             timeout=30000
         )
-        storage_manager = ImageDownloaderFactory.create_storage_manager(Path("downloads"), base_subject)
         database_manager = ImageDownloaderFactory.create_database_manager(db_path)
+        storage_manager = ImageDownloaderFactory.create_storage_manager(Path("downloads"), base_subject, database_manager)
         search_strategy = ImageDownloaderFactory.create_search_strategy()
         progress_tracker = ImageDownloaderFactory.create_progress_tracker()
         

@@ -344,7 +344,12 @@ class ImageDownloadOrchestrator:
                     successful_downloads += 1
                     self._handle_successful_download(result, tasks[i].source_url_id, tasks[i].image_url)
                 else:
-                    self.progress_tracker.log_activity(f"Download failed: {result.error_message}", "WARNING")
+                    # 🚨 IMPROVED: Handle duplicate content detection
+                    if "Duplicate image content detected" in str(result.error_message):
+                        self.skipped_duplicates += 1
+                        self.progress_tracker.log_activity(f"⏭️ Skipping duplicate content: {result.image_hash[:8]}...", "INFO")
+                    else:
+                        self.progress_tracker.log_activity(f"Download failed: {result.error_message}", "WARNING")
         
         return successful_downloads
     
@@ -399,7 +404,7 @@ class ImageDownloadOrchestrator:
             return True
         
         # Check if we have too many duplicates already
-        if self.skipped_duplicates > 50:  # Prevent infinite loops
+        if self.skipped_duplicates > 100:  # Increased from 50 to 100
             return True
             
         return False

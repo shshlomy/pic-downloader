@@ -144,27 +144,26 @@ class SQLiteDatabaseManager(IDatabaseManager):
         cursor = conn.cursor()
         
         try:
+            # 🚨 CRITICAL FIX: Check for duplicates BEFORE inserting
+            if image_hash:
+                cursor.execute('SELECT id FROM downloaded_images WHERE image_hash = ?', (image_hash,))
+                existing = cursor.fetchone()
+                if existing:
+                    # 🚨 NEW: Log duplicate detection
+                    print(f"🚨 Duplicate image hash detected: {image_hash[:8]}... - {file_path}")
+                    conn.close()
+                    return False  # Return False to indicate duplicate
+            
+            # Insert new image
             cursor.execute('''
-                INSERT OR IGNORE INTO downloaded_images 
+                INSERT INTO downloaded_images 
                 (source_url_id, image_url, image_hash, file_path, file_size, width, height, is_human, content_type)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (source_url_id, image_url, image_hash, file_path, file_size, width, height, is_human, content_type))
             
-            # For INSERT OR IGNORE, we need to check if the insert actually happened
-            # by checking if the image_hash exists after the insert
-            if image_hash:
-                cursor.execute('SELECT id FROM downloaded_images WHERE image_hash = ?', (image_hash,))
-                exists = cursor.fetchone()
-                success = exists is not None
-            else:
-                # If no hash, assume success (this shouldn't happen in normal operation)
-                success = True
-            
-            if success:
-                conn.commit()
-            
+            conn.commit()
             conn.close()
-            return success
+            return True
             
         except Exception as e:
             print(f"Database error in store_downloaded_image: {e}")  # Debug logging

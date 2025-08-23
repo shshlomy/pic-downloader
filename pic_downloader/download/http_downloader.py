@@ -109,6 +109,20 @@ class HTTPImageDownloader(IImageDownloader):
                     height=None
                 )
             
+            # 🚨 CRITICAL FIX: Calculate hash BEFORE saving to check for duplicates
+            image_hash = self.storage_manager.calculate_image_hash(content)
+            
+            # 🚨 CRITICAL FIX: Check if this image content already exists
+            if hasattr(self.storage_manager, 'is_duplicate_content') and self.storage_manager.is_duplicate_content(image_hash):
+                return DownloadResult(
+                    success=False,
+                    file_path=None,
+                    error_message="Duplicate image content detected",
+                    image_hash=image_hash,
+                    width=None,
+                    height=None
+                )
+            
             # Determine format from URL or content
             format = self._get_image_format(image_task.image_url, content)
             
@@ -125,9 +139,6 @@ class HTTPImageDownloader(IImageDownloader):
                     width=None,
                     height=None
                 )
-            
-            # Calculate hash
-            image_hash = self.storage_manager.calculate_image_hash(content)
             
             return DownloadResult(
                 success=True,
