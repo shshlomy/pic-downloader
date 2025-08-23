@@ -84,8 +84,15 @@ class ImageDownloadOrchestrator:
         if base_result.urls:
             self.progress_tracker.log_activity(f"Found {len(base_result.urls)} unique source websites", "INFO")
             
-            # Limit URLs based on target images
-            max_urls_needed = min(len(base_result.urls), max(10, max_images * 2))
+            # Limit URLs based on target images - be more aggressive for large targets
+            if max_images <= 20:
+                max_urls_needed = min(len(base_result.urls), max(10, max_images * 2))
+            elif max_images <= 100:
+                max_urls_needed = min(len(base_result.urls), max(50, max_images * 3))
+            else:
+                # For large targets like 500, be much more aggressive
+                max_urls_needed = min(len(base_result.urls), max(200, max_images * 4))
+            
             limited_urls = set(list(base_result.urls)[:max_urls_needed])
             
             self.progress_tracker.log_activity(f"Limiting to {len(limited_urls)} most relevant URLs", "INFO")
@@ -107,12 +114,22 @@ class ImageDownloadOrchestrator:
             # Try remaining unvisited URLs first
             remaining_downloads = await self._try_remaining_urls(search_id, remaining_needed)
             
-            # If still need more, generate variations
-            if self.new_downloads < max_images and self.search_strategy.should_generate_variations(self.new_downloads, max_images):
-                variation_downloads = await self._process_variations(base_query, search_id, max_images)
+            # If still need more, generate variations - be more aggressive for large targets
+            if self.new_downloads < max_images:
+                if max_images <= 20:
+                    should_vary = self.search_strategy.should_generate_variations(self.new_downloads, max_images)
+                elif max_images <= 100:
+                    should_vary = self.new_downloads < max_images * 0.7  # Generate if less than 70%
+                else:
+                    should_vary = self.new_downloads < max_images * 0.8  # Generate if less than 80%
+                
+                if should_vary:
+                    variation_downloads = await self._process_variations(base_query, search_id, max_images)
+                else:
+                    variation_downloads = 0
+                    self.progress_tracker.log_activity("Skipping variations - target reached or threshold not met", "INFO")
             else:
                 variation_downloads = 0
-                self.progress_tracker.log_activity("Skipping variations - target reached or threshold not met", "INFO")
         else:
             remaining_downloads = 0
             variation_downloads = 0
@@ -130,7 +147,16 @@ class ImageDownloadOrchestrator:
     async def _process_urls_phase(self, search_id: int, max_images: int, phase_name: str) -> int:
         """Process URLs in a specific phase with parallel processing"""
         phase_downloads = 0
-        unvisited = self.database_manager.get_unvisited_urls(search_id, limit=50)  # Increased limit
+        
+        # Get more unvisited URLs for large targets
+        if max_images <= 20:
+            url_limit = 50
+        elif max_images <= 100:
+            url_limit = 100
+        else:
+            url_limit = 200  # For large targets like 500
+        
+        unvisited = self.database_manager.get_unvisited_urls(search_id, limit=url_limit)
         
         if not unvisited:
             return 0
@@ -139,7 +165,14 @@ class ImageDownloadOrchestrator:
         prioritized_urls = self._prioritize_urls(unvisited)
         
         # Process URLs in parallel batches
-        batch_size = min(self.config.get_config("parallel_url_processing", 10), len(prioritized_urls))
+        if max_images <= 20:
+            batch_size = min(self.config.get_config("parallel_url_processing", 10), len(prioritized_urls))
+        elif max_images <= 100:
+            batch_size = min(self.config.get_config("parallel_url_processing", 15), len(prioritized_urls))
+        else:
+            # For large targets like 500, use larger batches
+            batch_size = min(self.config.get_config("parallel_url_processing", 25), len(prioritized_urls))
+        
         batches = [prioritized_urls[i:i + batch_size] for i in range(0, len(prioritized_urls), batch_size)]
         
         for batch in batches:
@@ -166,6 +199,9 @@ class ImageDownloadOrchestrator:
             # Reduced delay between batches
             await asyncio.sleep(0.3)  # Reduced from 0.5s to 0.3s
         
+        # Debug logging
+        self.progress_tracker.log_activity(f"Phase {phase_name}: phase_downloads={phase_downloads}, self.new_downloads={self.new_downloads}", "INFO")
+        
         return phase_downloads
     
     async def _process_single_url(self, url_id: int, url: str, max_images: int) -> int:
@@ -174,7 +210,7 @@ class ImageDownloadOrchestrator:
         
         try:
             # Extract images from website
-            url_id, image_urls = await self.image_extractor.extract_images(url, url_id)
+            extracted_url_id, image_urls = await self.image_extractor.extract_images(url, url_id)
             
             if image_urls:
                 self.progress_tracker.log_activity(f"Found {len(image_urls)} images", "INFO")
@@ -212,7 +248,7 @@ class ImageDownloadOrchestrator:
             self.progress_tracker.log_activity(f"Visiting: {urlparse(url).netloc}", "INFO")
             
             try:
-                url_id, image_urls = await self.image_extractor.extract_images(url, url_id)
+                extracted_url_id, image_urls = await self.image_extractor.extract_images(url, url_id)
                 
                 if image_urls:
                     additional_downloads += await self._download_images_batch(image_urls, url_id, remaining_needed)
@@ -234,7 +270,9 @@ class ImageDownloadOrchestrator:
         variation_downloads = 0
         
         for variation in variations:
-            if self.new_downloads >= max_images:
+            # Continue processing variations even if we're close to target
+            # This ensures we get closer to the requested number
+            if self.new_downloads >= max_images * 1.1:  # Allow 10% overage
                 break
             
             self.progress_tracker.log_activity(f"Processing variation: '{variation}'", "INFO")
@@ -243,8 +281,15 @@ class ImageDownloadOrchestrator:
             variation_result = await self.search_provider.search(variation)
             
             if variation_result.urls:
-                # Store URLs for variation
-                variation_urls = set(list(variation_result.urls)[:15])  # Limit per variation
+                # Store URLs for variation - be more aggressive for large targets
+                if max_images <= 20:
+                    variation_urls = set(list(variation_result.urls)[:15])  # Limit per variation
+                elif max_images <= 100:
+                    variation_urls = set(list(variation_result.urls)[:50])  # More URLs for medium targets
+                else:
+                    # For large targets like 500, allow many more URLs per variation
+                    variation_urls = set(list(variation_result.urls)[:200])
+                
                 self.database_manager.store_urls(search_id, variation_urls)
                 
                 # Process variation URLs
@@ -260,7 +305,8 @@ class ImageDownloadOrchestrator:
         # Create download tasks
         tasks = []
         for image_url in image_urls:
-            if self.new_downloads >= max_images:
+            # Continue processing until we reach target with buffer
+            if self.new_downloads >= max_images * 1.2:  # Allow 20% overage
                 break
             
             # Check for duplicates
@@ -291,12 +337,12 @@ class ImageDownloadOrchestrator:
             
             # Process results
             successful_downloads = 0
-            for result in results:
+            for i, result in enumerate(results):
                 if isinstance(result, Exception):
                     self.progress_tracker.log_activity(f"Download error: {result}", "ERROR")
                 elif result.success:
                     successful_downloads += 1
-                    self._handle_successful_download(result, source_url_id)
+                    self._handle_successful_download(result, tasks[i].source_url_id, tasks[i].image_url)
                 else:
                     self.progress_tracker.log_activity(f"Download failed: {result.error_message}", "WARNING")
         
@@ -318,16 +364,16 @@ class ImageDownloadOrchestrator:
                 height=None
             )
     
-    def _handle_successful_download(self, result: DownloadResult, source_url_id: int):
+    def _handle_successful_download(self, result: DownloadResult, source_url_id: int, image_url: str):
         """Handle successful download"""
         with self.lock:
             self.new_downloads += 1
             self.downloaded_hashes.add(result.image_hash)
             
             # Store in database
-            self.database_manager.store_downloaded_image(
+            success = self.database_manager.store_downloaded_image(
                 source_url_id=source_url_id,
-                image_url=result.file_path.name,  # Use filename as image_url for now
+                image_url=image_url,  # Use the actual image URL from the task
                 image_hash=result.image_hash,
                 file_path=str(result.file_path),
                 file_size=result.file_path.stat().st_size if result.file_path else 0,
@@ -337,7 +383,13 @@ class ImageDownloadOrchestrator:
                 content_type=result.content_type
             )
             
-            # Use a placeholder for the image URL since it's not in the result
+            # Debug logging
+            if success:
+                self.progress_tracker.log_activity(f"✅ Stored in DB: {result.file_path.name} (URL: {image_url[:50]}...)", "INFO")
+            else:
+                self.progress_tracker.log_activity(f"❌ Failed to store in DB: {result.file_path.name}", "ERROR")
+            
+            # Log the successful download
             self.progress_tracker.log_download_attempt(f"Image {result.file_path.name}", True)
     
     def _is_duplicate_image(self, image_url: str) -> bool:

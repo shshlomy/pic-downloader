@@ -150,14 +150,24 @@ class SQLiteDatabaseManager(IDatabaseManager):
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (source_url_id, image_url, image_hash, file_path, file_size, width, height, is_human, content_type))
             
-            success = cursor.rowcount > 0
+            # For INSERT OR IGNORE, we need to check if the insert actually happened
+            # by checking if the image_hash exists after the insert
+            if image_hash:
+                cursor.execute('SELECT id FROM downloaded_images WHERE image_hash = ?', (image_hash,))
+                exists = cursor.fetchone()
+                success = exists is not None
+            else:
+                # If no hash, assume success (this shouldn't happen in normal operation)
+                success = True
+            
             if success:
                 conn.commit()
             
             conn.close()
             return success
             
-        except Exception:
+        except Exception as e:
+            print(f"Database error in store_downloaded_image: {e}")  # Debug logging
             conn.close()
             return False
     

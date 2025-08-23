@@ -52,11 +52,11 @@ class WebImageExtractor(IImageExtractor):
                 
                 # Filter and return unique URLs
                 unique_urls = list(set(image_urls))
-                return len(unique_urls), unique_urls
+                return url_id, unique_urls  # Return url_id, not count
                 
         except Exception as e:
             self.progress_tracker.log_activity(f"Error extracting images from {url}: {e}", "ERROR")
-            return 0, []
+            return url_id, []  # Return url_id with empty list on error
     
     def _get_dynamic_timeout(self, url: str) -> int:
         """Get dynamic timeout based on domain performance"""

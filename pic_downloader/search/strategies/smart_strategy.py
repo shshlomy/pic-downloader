@@ -8,7 +8,7 @@ from ...core.interfaces import ISearchStrategy
 class SmartSearchStrategy(ISearchStrategy):
     """Smart search strategy that generates variations only when needed"""
     
-    def __init__(self, max_variations: int = 4, variation_threshold: int = 3):
+    def __init__(self, max_variations: int = 12, variation_threshold: int = 3):
         self.max_variations = max_variations
         self.variation_threshold = variation_threshold
     
@@ -17,7 +17,7 @@ class SmartSearchStrategy(ISearchStrategy):
         variations = []
         
         # Add contextual variations for person searches
-        person_contexts = ['singer', 'artist', 'photos', 'pictures']
+        person_contexts = ['singer', 'artist', 'photos', 'pictures', 'portrait', 'red carpet', 'movie', 'actress', 'celebrity', 'professional', 'award', 'fashion', 'beauty', 'style']
         for context in person_contexts:
             variations.append(f"{base_query} {context}")
         
@@ -33,9 +33,17 @@ class SmartSearchStrategy(ISearchStrategy):
         """Determine if variations should be generated"""
         remaining_needed = target_count - current_count
         
+        # Be more aggressive for large targets
+        if target_count <= 20:
+            threshold = 3  # Small targets
+        elif target_count <= 100:
+            threshold = 5  # Medium targets
+        else:
+            threshold = 10  # Large targets like 500
+        
         # Only generate variations if we need more than the threshold
         # This prevents overkill for small targets
-        return remaining_needed > self.variation_threshold
+        return remaining_needed > threshold
     
     def get_variation_count(self, remaining_needed: int) -> int:
         """Get the number of variations to generate based on remaining need"""
